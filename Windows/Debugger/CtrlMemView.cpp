@@ -55,7 +55,7 @@ CtrlMemView::CtrlMemView(HWND _wnd)
 	asciiStart = hexStart + (rowSize*3+1)*charWidth;
 
 	// set redraw timer
-	SetTimer(wnd,1,1000,0);
+	SetTimer(wnd,1,16,0);
 }
 
 CtrlMemView::~CtrlMemView()
