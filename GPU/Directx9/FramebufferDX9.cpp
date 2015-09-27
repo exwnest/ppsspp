@@ -39,6 +39,8 @@
 
 #include <algorithm>
 
+void ShowScreenResolution();
+
 namespace DX9 {
 	static void ConvertFromRGBA8888(u8 *dst, u8 *src, u32 dstStride, u32 srcStride, u32 width, u32 height, GEBufferFormat format);
 
@@ -1107,7 +1109,30 @@ namespace DX9 {
 	void FramebufferManagerDX9::EndFrame() {
 		if (resized_) {
 			DestroyAllFBOs();
-			dxstate.viewport.set(0, 0, PSP_CoreParameter().pixelWidth, PSP_CoreParameter().pixelHeight);
+			dxstate.viewport.set(0, 0, pixelWidth_, pixelHeight_);
+			// Actually, auto mode should be more granular...
+			// Round up to a zoom factor for the render size.
+			int zoom = g_Config.iInternalResolution;
+			if (zoom == 0) { // auto mode
+											 // Use the longest dimension
+				if (!g_Config.IsPortrait()) {
+					zoom = (PSP_CoreParameter().pixelWidth + 479) / 480;
+				} else {
+					zoom = (PSP_CoreParameter().pixelHeight + 479) / 480;
+				}
+			}
+			if (zoom <= 1)
+				zoom = 1;
+
+			if (g_Config.IsPortrait()) {
+				PSP_CoreParameter().renderWidth = 272 * zoom;
+				PSP_CoreParameter().renderHeight = 480 * zoom;
+			} else {
+				PSP_CoreParameter().renderWidth = 480 * zoom;
+				PSP_CoreParameter().renderHeight = 272 * zoom;
+			}
+
+			ShowScreenResolution();
 			resized_ = false;
 		}
 #if 0
