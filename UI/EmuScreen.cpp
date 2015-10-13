@@ -157,6 +157,10 @@ void EmuScreen::bootComplete() {
 		} else if (strstr(renderer, "GLTools") != 0) {
 			osm.Show(sc->T("GLToolsWarning", "WARNING: GLTools detected, may cause problems"), 10.0f, 0xFF30a0FF, -1, true);
 		}
+
+		if (g_Config.bGfxDebugOutput) {
+			osm.Show("WARNING: GfxDebugOutput is enabled via ppsspp.ini. Things may be slow.", 10.0f, 0xFF30a0FF, -1, true);
+		}
 	}
 
 	System_SendMessage("event", "startgame");
@@ -369,9 +373,7 @@ void EmuScreen::onVKeyDown(int virtualKeyCode) {
 		SaveState::SaveSlot(gamePath_, g_Config.iCurrentStateSlot, SaveState::Callback());
 		break;
 	case VIRTKEY_LOAD_STATE:
-		if (SaveState::HasSaveInSlot(gamePath_, g_Config.iCurrentStateSlot)) {
-			SaveState::LoadSlot(gamePath_, g_Config.iCurrentStateSlot, SaveState::Callback());
-		}
+		SaveState::LoadSlot(gamePath_, g_Config.iCurrentStateSlot, SaveState::Callback());
 		break;
 	case VIRTKEY_NEXT_SLOT:
 		SaveState::NextSlot();

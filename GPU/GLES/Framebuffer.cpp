@@ -1016,12 +1016,6 @@ void FramebufferManager::CopyDisplayToOutput() {
 	}
 	displayFramebuf_ = vfb;
 
-	if (resized_) {
-		ClearBuffer();
-		DestroyDraw2DProgram();
-		SetLineWidth();
-	}
-
 	if (vfb->fbo) {
 		DEBUG_LOG(SCEGE, "Displaying FBO %08x", vfb->fb_address);
 		DisableState();
@@ -1659,8 +1653,11 @@ void ShowScreenResolution();
 
 void FramebufferManager::EndFrame() {
 	if (resized_) {
+		// TODO: Only do this if the new size actually changed the renderwidth/height.
 		DestroyAllFBOs();
-		glstate.viewport.set(0, 0, pixelWidth_, pixelHeight_);
+
+		// Probably not necessary
+		glstate.viewport.set(0, 0, PSP_CoreParameter().pixelWidth, PSP_CoreParameter().pixelHeight);
 
 		// Actually, auto mode should be more granular...
 		// Round up to a zoom factor for the render size.
@@ -1684,10 +1681,15 @@ void FramebufferManager::EndFrame() {
 			PSP_CoreParameter().renderHeight = 272 * zoom;
 		}
 
+		UpdateSize();
+
 		resized_ = false;
 #ifdef _WIN32
 		ShowScreenResolution();
 #endif
+		ClearBuffer();
+		DestroyDraw2DProgram();
+		SetLineWidth();
 	}
 
 #ifndef USING_GLES2

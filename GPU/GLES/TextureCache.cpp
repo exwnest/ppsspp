@@ -1005,8 +1005,10 @@ void TextureCache::ApplyTexture() {
 			}
 		}
 
-		glBindTexture(GL_TEXTURE_2D, nextTexture_->textureName);
-		lastBoundTexture = nextTexture_->textureName;
+		if (nextTexture_->textureName != lastBoundTexture) {
+			glBindTexture(GL_TEXTURE_2D, nextTexture_->textureName);
+			lastBoundTexture = nextTexture_->textureName;
+		}
 		UpdateSamplingParams(*nextTexture_, false);
 	}
 
@@ -1090,8 +1092,9 @@ void TextureCache::ApplyTextureFramebuffer(TexCacheEntry *entry, VirtualFramebuf
 
 		glUseProgram(depal->program);
 
-		glstate.arrayBuffer.unbind();
-		glstate.elementArrayBuffer.unbind();
+		// Restore will rebind all of the state below.
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glEnableVertexAttribArray(depal->a_position);
 		glEnableVertexAttribArray(depal->a_texcoord0);
 
@@ -1354,10 +1357,10 @@ void TextureCache::SetTexture(bool force) {
 			//got one!
 			entry->lastFrame = gpuStats.numFlips;
 			if (entry->textureName != lastBoundTexture) {
-				nextTexture_ = entry;
 				gstate_c.textureFullAlpha = entry->GetAlphaStatus() == TexCacheEntry::STATUS_ALPHA_FULL;
 				gstate_c.textureSimpleAlpha = entry->GetAlphaStatus() != TexCacheEntry::STATUS_ALPHA_UNKNOWN;
 			}
+			nextTexture_ = entry;
 			VERBOSE_LOG(G3D, "Texture at %08x Found in Cache, applying", texaddr);
 			return; //Done!
 		} else {
